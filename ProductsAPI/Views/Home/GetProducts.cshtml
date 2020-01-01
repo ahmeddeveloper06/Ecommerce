@@ -1,0 +1,178 @@
+﻿@model IEnumerable<ProductsAPI.Models.Product>
+
+@{
+    ViewBag.Title = "GetProducts";
+    
+}
+
+<h2>GetProducts</h2>
+<div class="row clearfix">
+    @Html.Partial("_msg");
+</div>
+
+<table class="table" id="tbProducts">
+    <thead>
+        <tr>
+
+            <th>
+                Name
+            </th>
+            <th>
+                detaiel
+            </th>
+            <th>
+                UnitPrice
+            </th>
+            <th>
+                Amount
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tbProductsBody"></tbody>
+
+
+    
+
+    </table>
+
+<div class="row">
+    @*<input type="button" class="btn btn-primary " value="Confirm Transaction" onclick="location.href='@Url.Action("Transaction", "Home")'" />*@
+    <a class="btn btn-success" id="btnOpenForm" data-toggle="modal" data-target="#mod-Form">Confirm Payment </a>
+</div>
+
+
+<div class="modal fade" id="mod-Form" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mod-cat-title2">Payment Process</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @using (Html.BeginForm("Transaction", "Home", FormMethod.Post, new { @id = "frmSavePument", enctype = "multipart/form-data" }))
+            {
+
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+
+                    <div class="form-horizontal">
+
+                        <input type="hidden" id="hdnID" name="id" />
+
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        <div class="form-group">
+                            <label class="control-label col-md-3">Customer Name</label>
+                            <div class="col-md-9">
+                                <input type="text" name="CustomerName" id="txtCustomerName" class="form-control inputfrom" />
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3">Customer Mobile</label>
+                            <div class="col-md-9">
+                                <input type="text" name="CustomerMobile" id="txtCustomerMobile" class="form-control inputfrom" />
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="control-label col-md-3">Customer Address</label>
+                            <div class="col-md-9">
+                                <input type="text" name="CustomerAddress" id="txtCustomerAddress" class="form-control inputfrom" />
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="Change-text" class="btn btn-primary">Save</button>
+                    <button type="submit" id="Delete-text" class="btn btn-primary">Delete</button>
+                    <button type="button" class="btn btn-primary">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+    @section scripts{
+        <script>
+     var getData = function () {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetProductsByApi", "Home")',
+                data: {},
+                dataType: 'json',
+                contentType: 'application/json'
+            }).done(function (data) {
+                //first method
+                $('#tbProductsBody').html('');
+
+
+                $.each(data, function (index, key) {
+
+                    var newRow = '<tr id="tr' + key.id + '">\
+                        <td>'+ key.Name + '</td>\
+                           \
+                                <td>\
+                                    '+ key.detaiel + '\
+                            </td>\
+                                <td>\
+                                    '+ key.UnitPrice + '\
+                                </td>\
+                    <td>\
+                                    <input type="text" class="amount" value=""/>\
+                                </td>\
+                        \
+                     <td>\
+                                   <a data-id="'+ key.id + '" class="btnOpenForEditProduct">Add To Cart</a> \
+                        </tr>';
+
+                    $('#tbProducts').append(newRow);
+
+                });
+
+
+
+            }).error(function (jqXHR, textStatus, errorThrown) {
+            });
+        }
+    $(document).ready(function () {
+        getData();
+
+
+    });
+
+        $(document).on('click', '.btnOpenForEditProduct', function () {
+            if (confirm("Are you sure?")) {
+                var id = $(this).data("id");
+                var amount = $(this).closest('tr').find('.amount').val();
+
+                $(this).closest('tr').find('.amount').val('');
+                $.ajax({
+                    type: "Get",
+                    url: '@Url.Action("AddCart", "Home")',
+                    data: { id: id, amount: amount },
+                    dataType: 'json',
+                    contentType: 'application/json'
+                }).done(function (data) {
+
+                    //document.getElementById("Delete-text").disabled = true;
+
+
+                }).error(function (jqXHR, textStatus, errorThrown) {
+                });
+
+            }
+
+        });
+
+        </script>
+
+    }
